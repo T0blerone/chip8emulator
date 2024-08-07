@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "iosfwd": "cpp",
-        "cstdint": "cpp",
-        "random": "cpp"
-    }
-}
