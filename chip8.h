@@ -9,6 +9,8 @@
 const unsigned int START_ADDRESS = 0x200; // Since 0x000 to 0x1FF is reserved, ROM instructions start at 0x200.
 const unsigned int FONTSET_SIZE = 80; // 80 pieces
 const unsigned int FONTSET_START_ADDRESS = 0x50; // Reserved in memory starting at 0x50
+const unsigned int VIDEO_WIDTH = 0x40;
+const unsigned int VIDEO_HEIGHT = 0x20;
 
 class Chip8
 {
@@ -69,6 +71,22 @@ private:
     void OP_8xy6();
     void OP_8xy7();
     void OP_8xyE();
+    void OP_9xy0();
+    void OP_Annn();
+    void OP_Bnnn();
+    void OP_Cxkk();
+    void OP_Dxyn();
+    void OP_Ex9E();
+    void OP_ExA1();
+    void OP_Fx07();
+    void OP_Fx0A();
+    void OP_Fx15();
+    void OP_Fx18();
+    void OP_Fx1E();
+    void OP_Fx29();
+    void OP_Fx33();
+    void OP_Fx55();
+    void OP_Fx65();
 };
 
 #endif // CHIP8_H

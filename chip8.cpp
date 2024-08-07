@@ -7,7 +7,7 @@ Chip8::Chip8() : randGen(std::chrono::system_clock::now().time_since_epoch().cou
     pc = START_ADDRESS; // Set the program counter to start outside of reserved memory.
     
     // Load fonts into memory
-    for (unsigned int i = 0; i < FONTSET_SIZE; i++) {
+    for (unsigned int i = 0; i < FONTSET_SIZE; ++i) {
         memory[FONTSET_START_ADDRESS + i] = fontset[i];
     }
 
@@ -64,7 +64,7 @@ void Chip8::OP_2nnn(){
     uint16_t address = opcode & 0x0FFFu;
 
     stack[sp] = pc;
-    sp++;
+    ++sp;
     pc = address;
 }
 
@@ -164,3 +164,224 @@ void Chip8::OP_8xy4(){
 }
 
 //OP_8xy5 implementation, set Vx = Vx - Vy, set VF = NOT borrow
+void Chip8::OP_8xy5(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t Vy = (opcode & 0x00F0u) >> 4u;
+
+    if(registers[Vx] > registers[Vy]){
+        registers[0xF] = 1;
+    }
+    else{
+        registers[0xF] = 0;
+    }
+
+    registers[Vx] -= registers[Vy];
+}
+
+//OP_8xy6 implementation, set Vx = Vx SHR 1
+void Chip8::OP_8xy6(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    //Saves LSB into VF register
+    registers[0xF] = (registers[Vx] & 0x1u);
+    registers[Vx] >>= 1;
+}
+
+//OP_8xy7 implementation, Set Vx = Vy - Vx, set VF = NOT borrow
+void Chip8::OP_8xy7(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t Vy = (opcode & 0x00F0u) >> 4u;
+
+    if(registers[Vy] > registers[Vx]){
+        registers[0xF] = 1;
+    }
+    else{
+        registers[0xF] = 0;
+    }
+
+    registers[Vx] = registers[Vy] - registers[Vx];
+}
+
+//OP_8xyE implementation, set Vx = Vx SHL 1
+void Chip8::OP_8xyE(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    //Save MSB in VF
+    registers[0xF] = (registers[Vx] & 0x80u) >> 7u;
+
+    registers[Vx] <<= 1;
+}
+
+//OP_9xy0 implementation, skip next instruction if Vx != Vy
+void Chip8::OP_8xyE(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t Vy = (opcode & 0x00F0u) >> 4u;
+    
+    if(registers[Vx] != registers[Vy]){
+        pc += 2;
+    }
+}
+
+//OP_Annn implementation, set I = nnn
+void Chip8::OP_8xyE(){
+    uint8_t address = opcode & 0x0FFFu;
+
+    index = address;
+}
+
+//OP_Bnnn implementation, jump to location nnn + V0
+void Chip8::OP_Bnnn(){
+    uint8_t address = opcode & 0x0FFFu;
+
+    pc = registers[0] + address;
+}
+
+//OP_Cxkk implementation, set Vx = random byte AND kk
+void Chip8::OP_Cxkk(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t byte = opcode & 0x00FFu;
+
+    registers[Vx] = randByte(randGen) & byte;
+}
+
+//OP_Dxyn implementation, display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collisino.
+void Chip8::OP_Dxyn(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t Vy = (opcode & 0x00F0u) >> 4u;
+    uint8_t height = opcode & 0x000Fu;
+
+    //Wrap around if beyond screen boundaries
+    uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
+    uint8_t yPos = registers[Vy] % VIDEO_HEIGHT;
+
+    registers[0xF] = 0;
+    for(unsigned int row = 0; row < height; ++row){
+        uint8_t spriteByte = memory[index + row];
+
+        for(unsigned int col = 0; col < 8; ++col){
+            uint8_t spritePixel = spriteByte & (0x80u >> col);
+            uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
+
+            //Sprite pixel is on
+            if(spritePixel){
+                //Screen pixel also on - indicating collision
+                if(*screenPixel == 0xFFFFFFFF){
+                    registers[0xF] = 1;
+                }
+
+                //XOR with the sprite pixel
+                *screenPixel ^= 0xFFFFFFFF;
+            }
+        }
+    }
+}
+
+//OP_Ex9E implementation, skip next instruction if key with the value of Vx is pressed
+void Chip8::OP_Ex9E(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    uint8_t key = registers[Vx];
+    
+    if(keypad[key]){
+        pc += 2;
+    }
+}
+
+//OP_ExA1 implementation, skip next instruction if key with the value of Vx is not pressed.
+void Chip8::OP_ExA1(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    uint8_t key = registers[Vx];
+
+    if(!keypad[key]){
+        pc += 2;
+    }
+}
+
+//OP_Fx07 implementation, set Vx = delay timer value
+void Chip8::OP_Fx07(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    registers[Vx] = delayTimer;
+}
+
+//OP_Fx0A implementation, wait for a key press and store the value of the key in Vx
+void Chip8::OP_Fx0A(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    bool keyFound = false;
+    for(uint8_t i = 0; i < 16; i++){
+        if(keypad[i]){
+            registers[Vx] = i;
+            keyFound = true;
+            break;
+        }
+    }
+    if(!keyFound){
+        pc -= 2;
+    }
+}
+
+//OP_Fx15 implementation, set delay timer = Vx
+void Chip8::OP_Fx15(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    delayTimer = registers[Vx];
+}
+
+//OP_Fx18 implementation, set sound timer = Vx
+void Chip8::OP_Fx18(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    soundTimer = registers[Vx];
+}
+
+//OP_Fx1E implementation, set I = I + Vx
+void Chip8::OP_Fx1E(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    index += registers[Vx];
+}
+
+//OP_Fx29 implementation, set I = location of sprite for digit Vx
+void Chip8::OP_Fx29(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t digit = registers[Vx];
+
+    index = FONTSET_START_ADDRESS + (5 * digit);
+}
+
+//OP_Fx33 implementation, Store BCD representation of Vx in memory locations I, I=1, and I+2.
+void Chip8::OP_Fx33(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    uint8_t value = registers[Vx];
+
+    //Ones place
+    memory[index + 2] = value % 10;
+    value /= 10;
+
+    //Tens place
+    memory[index + 1] = value % 10;
+    value /= 10;
+
+    //Hundredths place
+    memory[index] = value % 10;
+}
+
+//OP_Fx55 implementation, store registers V0 through Vx in memory starting at location I
+void Chip8::OP_Fx55(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+    for(uint8_t i = 0; i <= Vx; ++i){
+        memory[index + i] = registers[i];
+    }
+}
+
+//OP_Fx65 implementation, read registers V0 through Vx from memory starting at location I
+void Chip8::OP_Fx65(){
+    uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+    for(uint8_t i = 0; i <= Vx; ++i){
+        registers[i] = memory[index + i];
+    }
+}
+
