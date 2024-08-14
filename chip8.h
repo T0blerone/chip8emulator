@@ -30,6 +30,7 @@ public:
     uint16_t opcode;
     std::default_random_engine randGen;
     std::uniform_int_distribution<uint8_t> randByte;
+    
 
     uint8_t fontset[FONTSET_SIZE] =
     {
@@ -53,6 +54,7 @@ public:
 
 private:
     void LoadROM(char const*);
+    //Start of opcodes
     void OP_00E0();
     void OP_00EE();
     void OP_1nnn();
@@ -87,6 +89,20 @@ private:
     void OP_Fx33();
     void OP_Fx55();
     void OP_Fx65();
+    //Start of function pointer table functions
+    void Table0();
+    void Table8();
+    void TableE();
+    void TableF();
+    void OP_NULL();
+    typedef void (Chip8::*Chip8Func)();
+	Chip8Func table[0xF + 1];
+	Chip8Func table0[0xE + 1];
+	Chip8Func table8[0xE + 1];
+	Chip8Func tableE[0xE + 1];
+	Chip8Func tableF[0x65 + 1];
+    //Start of emulator functions
+    void Cycle();
 };
 
 #endif // CHIP8_H
