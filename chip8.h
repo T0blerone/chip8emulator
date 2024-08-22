@@ -51,9 +51,12 @@ public:
         0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
+    
+    //Start of emulator functions
+    void LoadROM(char const*);
+    void Cycle();
 
 private:
-    void LoadROM(char const*);
     //Start of opcodes
     void OP_00E0();
     void OP_00EE();
@@ -101,8 +104,6 @@ private:
 	Chip8Func table8[0xE + 1];
 	Chip8Func tableE[0xE + 1];
 	Chip8Func tableF[0x65 + 1];
-    //Start of emulator functions
-    void Cycle();
 };
 
 #endif // CHIP8_H

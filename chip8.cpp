@@ -1,6 +1,7 @@
 #include "Chip8.h"
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 // Constructor implementation
 Chip8::Chip8() : randGen(std::chrono::system_clock::now().time_since_epoch().count()) {
@@ -271,7 +272,7 @@ void Chip8::OP_8xyE(){
 }
 
 //OP_9xy0 implementation, skip next instruction if Vx != Vy
-void Chip8::OP_8xyE(){
+void Chip8::OP_9xy0(){
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
     
@@ -281,7 +282,7 @@ void Chip8::OP_8xyE(){
 }
 
 //OP_Annn implementation, set I = nnn
-void Chip8::OP_8xyE(){
+void Chip8::OP_Annn(){
     uint8_t address = opcode & 0x0FFFu;
 
     index = address;
