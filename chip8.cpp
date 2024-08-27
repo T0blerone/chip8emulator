@@ -1,4 +1,4 @@
-#include "Chip8.h"
+#include "chip8.h"
 #include <iostream>
 #include <fstream>
 #include <cstring>
@@ -455,18 +455,16 @@ void Chip8::Table8(){
     ((*this).*(table8[opcode & 0x000Fu]))();
 }
 
-void Chip8::TableE()
-{
+void Chip8::TableE(){
     ((*this).*(tableE[opcode & 0x000Fu]))();
 }
 
-void Chip8::TableF()
-{
+void Chip8::TableF(){
     ((*this).*(tableF[opcode & 0x00FFu]))();
 }
 
-void Chip8::OP_NULL()
-{}
+void Chip8::OP_NULL(){
+}
 
 void Chip8::Cycle(){
     //Fetch
