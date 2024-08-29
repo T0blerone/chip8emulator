@@ -2,11 +2,18 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <cassert>
+
+/*
+TODO
+- apparently table E is fucked somehow but that sounds like a later problem to me.
+
+*/
 
 // Constructor implementation
 Chip8::Chip8() : randGen(std::chrono::system_clock::now().time_since_epoch().count()) {
     pc = START_ADDRESS; // Set the program counter to start outside of reserved memory.
-    
+    sp = 0;
     // Load fonts into memory
     for (unsigned int i = 0; i < FONTSET_SIZE; ++i) {
         memory[FONTSET_START_ADDRESS + i] = fontset[i];
@@ -303,7 +310,7 @@ void Chip8::OP_Cxkk(){
     registers[Vx] = randByte(randGen) & byte;
 }
 
-//OP_Dxyn implementation, display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collisino.
+//OP_Dxyn implementation, display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
 void Chip8::OP_Dxyn(){
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
@@ -464,12 +471,19 @@ void Chip8::TableF(){
 }
 
 void Chip8::OP_NULL(){
+    //For Debugging
+    std::cout << "Unimplemented Opcode: " << std::hex << opcode << std::endl;
 }
 
 void Chip8::Cycle(){
-    //Fetch
+    //Fetch opcode
     opcode = (memory[pc] << 8u) | memory[pc+1];
 
+    //Debugging PC position
+    std::cout << "pc: " << pc << std::endl;
+    assert(pc % 2 == 0);
+    assert(pc >= START_ADDRESS && pc < 4096);
+    
     //Increment the PC before execution
     pc += 2;
 

@@ -24,6 +24,8 @@ int main(int argc, char* argv[]){
 	auto lastCycleTime = std::chrono::high_resolution_clock::now();
 	bool quit = false;
 
+	//int cycleCount = 0; //For Testing Purposes
+
 	while (!quit)
 	{
 		quit = platform.ProcessInput(chip8.keypad);
@@ -36,6 +38,7 @@ int main(int argc, char* argv[]){
 			lastCycleTime = currentTime;
 
 			chip8.Cycle();
+			//cycleCount++;
 
 			platform.Update(chip8.video, videoPitch);
 		}
