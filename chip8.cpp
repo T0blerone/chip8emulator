@@ -3,6 +3,8 @@
 #include <fstream>
 #include <cstring>
 #include <cassert>
+#include <algorithm>
+#include <vector>
 
 /*
 TODO
@@ -83,27 +85,30 @@ Chip8::Chip8() : randGen(std::chrono::system_clock::now().time_since_epoch().cou
 
 // LoadROM method implementation
 void Chip8::LoadROM(char const* filename) {
-    // Open the file as a binary stream
+    // Open the file as a binary stream, places cursor at the end of file
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
 
     if (file.is_open()) {
-        // Get the size of the file
+        // Get the size of the file by reading what character the cursor is at
         std::streampos size = file.tellg();
+        //std::cout << "size: " << size << std::endl;
         // Allocate a buffer to hold the file content
-        char* buffer = new char[size];
+        std::vector<char> buffer(size);
 
         // Go back to the beginning of the file and read the content into the buffer
         file.seekg(0, std::ios::beg);
-        file.read(buffer, size);
-        file.close();
+        file.read(buffer.data(), size);
+        
 
         // Load the ROM contents into Chip8 memory starting at 0x200
-        for (long i = 0; i < size; ++i) {
-            memory[START_ADDRESS + i] = buffer[i];
+        for (size_t i = 0; i < size; ++i) {
+            memory[START_ADDRESS + i] = static_cast<uint8_t>(buffer[i]);
         }
 
         // Clean up the buffer
-        delete[] buffer;
+        buffer.clear();
+        //Close file
+        file.close();
     } else {
         std::cerr << "Failed to open ROM: " << filename << std::endl;
     }
@@ -123,6 +128,8 @@ void Chip8::OP_00EE(){
 //OP_1nnn implementation, sets program counter to nnn
 void Chip8::OP_1nnn(){
     uint16_t address = opcode & 0x0FFFu;
+
+    pc = address;
 }
 
 //OP_2nnn implementation, call subroutine at nnn
@@ -290,7 +297,7 @@ void Chip8::OP_9xy0(){
 
 //OP_Annn implementation, set I = nnn
 void Chip8::OP_Annn(){
-    uint8_t address = opcode & 0x0FFFu;
+    uint16_t address = opcode & 0x0FFFu;
 
     index = address;
 }
@@ -480,7 +487,8 @@ void Chip8::Cycle(){
     opcode = (memory[pc] << 8u) | memory[pc+1];
 
     //Debugging PC position
-    std::cout << "pc: " << pc << std::endl;
+    std::cout << "Opcode: " << std::hex << opcode;
+    std::cout << " | pc: " << pc << std::endl;
     assert(pc % 2 == 0);
     assert(pc >= START_ADDRESS && pc < 4096);
     
