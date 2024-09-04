@@ -479,7 +479,7 @@ void Chip8::TableF(){
 
 void Chip8::OP_NULL(){
     //For Debugging
-    std::cout << "Unimplemented Opcode: " << std::hex << opcode << std::endl;
+    //std::cout << "Unimplemented Opcode: " << std::hex << opcode << std::endl;
 }
 
 void Chip8::Cycle(){
@@ -487,10 +487,10 @@ void Chip8::Cycle(){
     opcode = (memory[pc] << 8u) | memory[pc+1];
 
     //Debugging PC position
-    std::cout << "Opcode: " << std::hex << opcode;
+    /*std::cout << "Opcode: " << std::hex << opcode;
     std::cout << " | pc: " << pc << std::endl;
     assert(pc % 2 == 0);
-    assert(pc >= START_ADDRESS && pc < 4096);
+    assert(pc >= START_ADDRESS && pc < 4096);*/
     
     //Increment the PC before execution
     pc += 2;
