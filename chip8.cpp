@@ -6,12 +6,6 @@
 #include <algorithm>
 #include <vector>
 
-/*
-TODO
-- apparently table E is fucked somehow but that sounds like a later problem to me.
-
-*/
-
 // Constructor implementation
 Chip8::Chip8() : randGen(std::chrono::system_clock::now().time_since_epoch().count()) {
     pc = START_ADDRESS; // Set the program counter to start outside of reserved memory.
@@ -487,10 +481,10 @@ void Chip8::Cycle(){
     opcode = (memory[pc] << 8u) | memory[pc+1];
 
     //Debugging PC position
-    /*std::cout << "Opcode: " << std::hex << opcode;
-    std::cout << " | pc: " << pc << std::endl;
-    assert(pc % 2 == 0);
-    assert(pc >= START_ADDRESS && pc < 4096);*/
+    //std::cout << "Opcode: " << std::hex << opcode;
+    //std::cout << " | pc: " << pc << std::endl;
+    //assert(pc % 2 == 0);
+    //assert(pc >= START_ADDRESS && pc < 4096);
     
     //Increment the PC before execution
     pc += 2;
