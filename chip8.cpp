@@ -235,7 +235,7 @@ void Chip8::OP_8xy5(){
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
-    if(registers[Vx] > registers[Vy]){
+    if(registers[Vx] >= registers[Vy]){
         registers[0xF] = 1;
     }
     else{
@@ -259,7 +259,7 @@ void Chip8::OP_8xy7(){
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
-    if(registers[Vy] > registers[Vx]){
+    if(registers[Vy] >= registers[Vx]){
         registers[0xF] = 1;
     }
     else{
